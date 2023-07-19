@@ -20,7 +20,10 @@
     days: getDaysInMonth(date.getFullYear(), date.getMonth()),
   })
 
-  const fromNostrTime = seconds => new Date(seconds * 1000).toISOString().slice(0, -5).split("T")
+
+  const getTimezoneOffset = () => new Date().getTimezoneOffset() * 60000
+
+  const fromNostrTime = seconds => new Date(seconds * 1000 - getTimezoneOffset()).toISOString().slice(0, -5).split("T")
 
   const toNostrTime = (date, time) => dateToSeconds(new Date(`${date}T${time}`)).toString()
 
@@ -167,7 +170,7 @@
 
     await event.publish()
 
-    events = events.filter(e => e.id !== event.id).concat(event)
+    events = events.filter(e => getMeta(e).d !== draft.id).concat(event)
     key = Math.random()
 
     draft = null
@@ -198,7 +201,7 @@
     if (confirm("Are you sure you want to delete this event?")) {
       await draft.event.delete()
 
-      events = events.filter(e => e.id !== event.id)
+      events = events.filter(e => getMeta(e).d !== draft.id)
       key = Math.random()
 
       draft = null
@@ -229,7 +232,7 @@
   <div class="grid grid-cols-7 mx-4 card-default-t card-default-l">
     {#key key}
       {#each month.days as date, i}
-        <div class={`aspect-square text-gray-500 text-xs overflow-hidden relative`}>
+        <div class={`aspect-square text-gray-500 text-xs relative`}>
           <div class={`absolute inset-0 card-default-r card-default-b`} />
           <div class="p-1">
             {date.getDate()}
@@ -238,17 +241,18 @@
                 {@const meta = getMeta(event)}
                 {@const isContinuation = eventIsInRange(changeDay(date, -1), event)}
                 {@const isContinued = eventIsInRange(changeDay(date, 1), event)}
+                {@const isOwn = event.pubkey === user?.hexpubkey()}
                 <div
                   class={cx(
-                    "relative z-10 cursor-pointer p-1 whitespace-nowrap text-ellipsis overflow-hidden",
+                    "relative z-10 cursor-pointer p-1 whitespace-nowrap",
                     {
-                      "text-blue-500 border border-solid border-blue-500":
-                        event.pubkey !== user?.hexpubkey(),
-                      "bg-blue-500 text-white": event.pubkey === user?.hexpubkey(),
+                      "z-20": (!isContinuation || date.getDay() === 0) && isContinued,
+                      "bg-white text-blue-500 border border-solid border-blue-500": !isOwn,
+                      "bg-blue-500 text-white": isOwn,
                       "-ml-1 border-l-0": isContinuation,
                       "rounded-s": !isContinuation,
                       "-mr-1 border-r-0": isContinued,
-                      "rounded-e": !isContinued,
+                      "rounded-e text-ellipsis overflow-hidden": !isContinued,
                       "text-white/0": isContinuation && date.getDay() !== 0,
                     },
                   )}
@@ -267,7 +271,7 @@
     {@const isEditable = (!draft.event && user) || draft.event?.pubkey === user?.hexpubkey()}
     <div
       transition:fade
-      class="cursor-pointer fixed z-10 inset-0 bg-black/50 p-4"
+      class="cursor-pointer fixed z-20 inset-0 bg-black/50 p-4"
       on:click={clearEvent}>
       <div
         in:fly={{y: 20}}
