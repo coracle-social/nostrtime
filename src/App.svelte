@@ -211,7 +211,7 @@
   loadCalendar()
 </script>
 
-<div class="absolute inset-0 flex flex-col">
+<div class="absolute inset-0 flex flex-col max-w-screen-md mx-auto">
   <div class="p-4 flex justify-between grid grid-cols-3">
     <h1 class="text-2xl">NostrTime</h1>
     <div class="flex justify-center items-center gap-2">
