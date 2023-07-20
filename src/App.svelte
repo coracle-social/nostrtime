@@ -73,7 +73,7 @@
   const getDateEvents = date =>
     events
       .filter(e => eventIsInRange(date, e))
-      .sort((a, b) => (getMeta(a).start > getMeta(b).start ? 1 : 0))
+      .sort((a, b) => (getMeta(a).start > getMeta(b).start ? 1 : -1))
 
   const pendingNdk = (async () => {
     const ndk = new NDK({
