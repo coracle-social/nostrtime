@@ -79,6 +79,9 @@
     const ndk = new NDK({
       explicitRelayUrls: [
         "wss://nos.lol",
+        "wss://relay.damus.io",
+        "wss://offchain.pub",
+        "wss://relay.snort.social",
         "wss://nostr-pub.wellorder.net",
         "wss://relay.nostr.band",
       ],
